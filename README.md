@@ -113,4 +113,8 @@ Proof:
   ![ping west to east](assets/west-to-east.png)
 - Koneksi Timur ke Barat:
   ![ping easr to west](assets/east-to-west.png)
+
+  ## Soal 4
+
+  ![Zona K50.com](assets/4.PNG)
   
