@@ -199,5 +199,56 @@ dig @192.236.3.3 ns1.K50.com
 dig @192.236.3.4 ns2.K50.com
 ```
 
-![Zona K50.com](assets/4.PNG)
-  
+![Zona K50.com](assets/4.PNG)    
+
+## Soal 5
+Namai semua tokoh (hostname) sesuai glosarium, eonwe, earendil, elwing, cirdan, elrond, maglor, sirion, tirion, valmar, lindon, vingilot, dan verifikasi bahwa setiap host mengenali dan menggunakan hostname tersebut secara system-wide. Buat setiap domain untuk masing masing node sesuai dengan namanya (contoh: eru.<xxxx>.com) dan assign IP masing-masing juga. Lakukan pengecualian untuk node yang bertanggung jawab atas ns1 dan ns2
+
+Sebelumnya pastikan untuk tiap client sudah memiliki hostname, bisa dicek dengan menggunakan ``hostname``, jika belum tambahkan dengan melakukan ``nano /etc/hosts`` dan tambahkan line:
+
+```/etc/hosts @Cirdan
+127.0.1.1       Cirdan
+127.0.0.1       localhost
+```
+
+
+Selanjutnya kita mendaftarkan Alamat di DNS (A Records), pertama lakukan ``nano /etc/bind/zones/db.K50.com``, naikkan angka serial dan tambahkan ini:
+```
+; hostname record
+eonwe       IN      A       192.236.1.1    ; IP eth1 Eonwe
+earendil    IN      A       192.236.1.2
+elwing      IN      A       192.236.1.3
+cirdan      IN      A       192.236.2.2
+elrond      IN      A       192.236.2.3
+maglor      IN      A       192.236.2.4
+sirion      IN      A       192.236.3.2
+tirion      IN      A       192.236.3.3
+valmar      IN      A       192.236.3.4
+lindon      IN      A       192.236.3.5
+vingilot    IN      A       192.236.3.6
+```
+
+![add hostname](assets/add-hostnames.png)
+
+Jangan lupa save dan setelah itu reload server dengan ``rndc reload``
+Selanjutnya kita test beberapa domain:
+- **vingilot.k50.com**
+  ![test vingilot.k50.com](assets/hostname-test1.png)
+  Terlihat IP Address yang sesuai dengan config kita tadi
+- **elwing.k50.com**
+  ![test elwing.k50.com](assets/hostname-test2.png)
+  Terlihat IP Address yang sesuai dengan config kita tadi
+- **maglor.k50.com**
+  ![test maglor.k50.com](assets/hostname-test3.png)
+  Terlihat IP Address yang sesuai dengan config kita tadi
+
+## Soal 6
+Lonceng Valmar berdentang mengikuti irama Tirion. Pastikan zone transfer berjalan, Pastikan Valmar (ns2) telah menerima salinan zona terbaru dari Tirion (ns1). Nilai serial SOA di keduanya harus sama
+
+Kita lakukan pengecekan apakah nilai serial yang baru di Tirion sama dengan Valmar, kita coba cek dengan:
+- Cek Tirion
+![Serial Tirion](assets/transfer-check.png)
+- Cek Valmar
+![Serial Valmar](assets/transfer-check1.png)
+
+## Soal 7
