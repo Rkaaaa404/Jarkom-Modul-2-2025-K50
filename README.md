@@ -121,8 +121,8 @@ Di Tirion:
 Instalasi BIND9
 
 ```
-sudo apt update
-sudo apt install bind9 -y
+apt update
+apt install bind9 -y
 ```
 
 Edit file konfigurasi utama zona:
