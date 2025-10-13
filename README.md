@@ -212,7 +212,7 @@ Sebelumnya pastikan untuk tiap client sudah memiliki hostname, bisa dicek dengan
 ```
 
 
-Selanjutnya kita mendaftarkan Alamat di DNS (A Records), pertama lakukan ``nano /etc/bind/zones/db.K50.com``, naikkan angka serial dan tambahkan ini:
+Selanjutnya kita mendaftarkan Alamat di **DNS Tirion** (A Records), pertama lakukan ``nano /etc/bind/zones/db.K50.com``, naikkan angka serial dan tambahkan ini:
 ```
 ; hostname record
 eonwe       IN      A       192.236.1.1    ; IP eth1 Eonwe
@@ -369,9 +369,9 @@ apt-get install -y nginx
 
 # 2. Buat folder dan file arsip
 mkdir -p "/var/www/html/annals"
-touch "/var/www/html/annals/the_silmarillion.txt"
-touch "/var/www/html/annals/the_hobbit.txt"
-touch "/var/www/html/annals/unfinished_tales.md"
+touch "/var/www/html/annals/halo.txt"
+touch "/var/www/html/annals/dunia.txt"
+touch "/var/www/html/annals/K50.md"
 
 # 3. Buat file konfigurasi Nginx
 tee /etc/nginx/sites-available/static > /dev/null <<'EOF'
