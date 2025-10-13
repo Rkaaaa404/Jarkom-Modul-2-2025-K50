@@ -252,4 +252,108 @@ Kita lakukan pengecekan apakah nilai serial yang baru di Tirion sama dengan Valm
 ![Serial Valmar](assets/transfer-check1.png)
 
 ## Soal 7
-asdfg
+Tambahkan pada zona <xxxx>.com A record untuk sirion.<xxxx>.com (IP Sirion), lindon.<xxxx>.com (IP Lindon), dan vingilot.<xxxx>.com (IP Vingilot). Tetapkan CNAME :
+www.<xxxx>.com → sirion.<xxxx>.com, 
+static.<xxxx>.com → lindon.<xxxx>.com, dan 
+app.<xxxx>.com → vingilot.<xxxx>.com. 
+Verifikasi dari dua klien berbeda bahwa seluruh hostname tersebut ter-resolve ke tujuan yang benar dan konsisten.
+
+Untuk menambahkan cname kita bisa tambahkan di ns1 (**Tirion**) dan membuka ``nano /etc/bind/zones/db.K50.com`` lalu menambahkan:
+```/etc/bind/zones/db.K50.com
+; Service Aliases (CNAME Records for public-facing names)
+www         IN      CNAME   sirion.K50.com.
+static      IN      CNAME   lindon.K50.com.
+app         IN      CNAME   vingilot.K50.com.
+```
+Jangan lupa save dan setelah itu reload server dengan ``rndc reload``. Setelah itu kita coba test dengan client **Cirdan** dan **Vingilot**:
+- **Cirdan**:
+  ![dig-app cirdan](assets/dig-app1.png)
+  ![dig-static cirdan](assets/dig-static1.png)
+  ![dig-www cirdan](assets/dig-www1.png)
+- **Vingilot**:
+  ![dig-app vingilot](assets/dig-app2.png)
+  ![dig-static vingilot](assets/dig-static2.png)
+  ![dig-www vingilot](assets/dig-www2.png)
+<br>
+
+## Soal 8
+Pertama siapkan script sh untuk **Tirion** dan **Valmar**:
+- **Tirion**:
+```
+#!/bin/bash
+
+# --- Configs ---
+DOMAIN="K50.com"
+REVERSE_ZONE="3.236.192.in-addr.arpa"
+REVERSE_ZONE_FILE="/etc/bind/zones/db.192.236.3"
+SLAVE_IP="192.236.3.4"
+
+# Deklarasi zone di named.conf.local
+tee -a /etc/bind/named.conf.local > /dev/null <<EOF
+
+zone "$REVERSE_ZONE" {
+    type master;
+    file "$REVERSE_ZONE_FILE";
+    allow-transfer { $SLAVE_IP; };
+};
+EOF
+
+# Buat file reverse zone
+tee $REVERSE_ZONE_FILE > /dev/null <<EOF
+\$TTL    604800
+@       IN      SOA     ns1.$DOMAIN. root.$DOMAIN. (
+                        $(date +%Y%m%d)01      ; Serial
+                        604800          ; Refresh
+                        86400           ; Retry
+                        2419200         ; Expire
+                        604800 )        ; Negative Cache TTL
+;
+@       IN      NS      ns1.$DOMAIN.
+@       IN      NS      ns2.$DOMAIN.
+
+; PTR Records
+2       IN      PTR     sirion.$DOMAIN.
+5       IN      PTR     lindon.$DOMAIN.
+6       IN      PTR     vingilot.$DOMAIN.
+EOF
+
+# Validasi & reload
+named-checkconf
+named-checkzone $REVERSE_ZONE $REVERSE_ZONE_FILE
+rndc reload
+
+echo "Setup reverse master di Tirion selesai."  
+```
+- **Valmar**:
+```
+#!/bin/bash
+
+# --- Configs ---
+REVERSE_ZONE="3.236.192.in-addr.arpa"
+MASTER_IP="192.236.3.3"
+
+# Deklarasi slave zone di named.conf.local
+tee -a /etc/bind/named.conf.local > /dev/null <<EOF
+
+zone "$REVERSE_ZONE" {
+    type slave;
+    file "/var/lib/bind/db.192.236.3";
+    masters { $MASTER_IP; };
+};
+EOF
+
+# Reload
+rndc reload
+
+echo "Setup reverse slave di Valmar selesai. Cek syslog buat liat transfer log."
+```
+
+Setelah selesai setup reverse proxy, kita lanjutkan uji coba keberhasilan query reverse untuk alamat Sirion, Lindon, Vingilot:
+- **Sirion**:
+  ![reverse query sirion](assets/rev-sirion.png)
+- **Lindon**:
+  ![reverse query lindon](assets/rev-lindon.png)
+- **Vingilot**:
+  ![reverse query vingilot](assets/rev-vingilot.png)
+
+# Soal 9
