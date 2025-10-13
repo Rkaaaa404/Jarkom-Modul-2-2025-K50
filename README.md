@@ -252,3 +252,4 @@ Kita lakukan pengecekan apakah nilai serial yang baru di Tirion sama dengan Valm
 ![Serial Valmar](assets/transfer-check1.png)
 
 ## Soal 7
+asdfg
