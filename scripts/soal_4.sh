@@ -1,18 +1,29 @@
-#di TIRION
+#!/bin/bash
+# === Tirion (ns1/master) setup script ===
+GROUP=K50
+DOMAIN=${GROUP}.com
 
-#Instalasi BIND9
-apt update
-apt install bind9 -y
+# Pastikan bind9 terpasang
+if ! command -v named &> /dev/null; then
+    apt update -y
+    apt install bind9 dnsutils -y
+fi
 
-#Edit file konfigurasi utama zona di /etc/bind/named.conf.local
-zone "K50.com" {
+mkdir -p /var/log/named
+chown bind:bind /var/log/named
+
+# Konfigurasi utama zona
+cat > /etc/bind/named.conf.local << EOF
+zone "${DOMAIN}" {
     type master;
-    file "/etc/bind/zones/db.K50.com";
-    allow-transfer { 192.236.3.4; };   # hanya Valmar boleh ambil zona
-    notify yes;                        # otomatis beri tahu Valmar kalau zona berubah
+    file "/etc/bind/zones/db.${DOMAIN}";
+    allow-transfer { 192.236.3.4; };   // Valmar
+    notify yes;
 };
+EOF
 
-#Tambahkan forwarders ke internet
+# Konfigurasi untuk forwarders ke internet
+cat > /etc/bind/named.conf.options <<EOF
 options {
     directory "/var/cache/bind";
 
@@ -27,48 +38,30 @@ options {
 
     listen-on { any; };
 };
+EOF
 
-#Buat folder zona dan file db.K50.com di folder tersebut
-$TTL    604800
-@       IN      SOA     ns1.K50.com. root.K50.com. (
-                        2025101101      ; Serial (ubah tiap kali edit)
-                        604800          ; Refresh
-                        86400           ; Retry
-                        2419200         ; Expire
-                        604800 )        ; Negative Cache TTL
+# File zona utama
+mkdir -p /etc/bind/zones
+cat > /etc/bind/zones/db.${DOMAIN} <<EOF
+\$TTL 604800
+@       IN      SOA     ns1.${DOMAIN}. admin.${DOMAIN}. (
+                        2025101201 ; Serial
+                        604800     ; Refresh
+                        86400      ; Retry
+                        2419200    ; Expire
+                        604800 )   ; Negative Cache TTL
 ;
-@       IN      NS      ns1.K50.com.
-@       IN      NS      ns2.K50.com.
-
+        IN      NS      ns1.${DOMAIN}.
+        IN      NS      ns2.${DOMAIN}.
 ns1     IN      A       192.236.3.3
 ns2     IN      A       192.236.3.4
-@       IN      A       192.236.3.2
+@       IN      A       192.236.3.2   ; Sirion / front door
+EOF
 
-#Restart dan cek syntax
-named-checkconf
-named-checkzone K50.com /etc/bind/zones/db.K50.com
-named -g -c /etc/bind/named.conf &
+# Pastikan permission aman
+chown -R bind:bind /etc/bind
 
-#di VALMAR
-
-#install BIND9 dan tambahkan zona slave /etc/bind/named.conf.local
-zone "K50.com" {
-    type slave;
-    masters { 192.236.3.3; };
-    file "/var/lib/bind/db.K50.com";
-};
-
-#Tambahkan forwarders juga, edit /etc/bind/named.conf.options
-options {
-    forwarders {
-        192.168.122.1;
-    };
-    allow-query { any; };
-    recursion yes;
-    dnssec-validation no;
-}
-
-#Ubah resolver di semua host non-router
-nameserver 192.236.3.3
-nameserver 192.236.3.4
-nameserver 192.168.122.1
+# Jalankan BIND
+pkill named
+named -u bind -c /etc/bind/named.conf &
+echo "[Tirion] BIND9 master (${DOMAIN}) started."
