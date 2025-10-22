@@ -97,21 +97,27 @@ up iptables -t nat -A POSTROUTING -o eth0 -j    MASQUERADE -s 192.236.0.0/16
 up echo nameserver 192.168.122.1 > /etc/resolv.conf
 ```
 
-Proof:
+Proof:    
+<br>
 ![Test ping google.com](assets/connect-ext.png)
 
 ## Soal 3
 Kabar dari Barat menyapa Timur. Pastikan kelima klien dapat saling berkomunikasi lintas jalur (routing internal via Eonwe berfungsi), lalu pastikan setiap host non-router menambahkan resolver 192.168.122.1 saat interfacenya aktif agar akses paket dari internet tersedia sejak awal.
 
 Seperti yang dibahas tadi, kami sudah menambahkan echo nameserver  saat interfacenya aktif, selanjutnya untuk memastikan koneksi antar client bisa terjadi kami menambahkan config ip forwarding di Router (Eonwe):
+<br>
 ![nano config systctl](assets/ip-forward.png)
+<br>
 Setelah itu run config:    
+<br>
 ![run systctl](assets/systcl-ip-forward.png)    
 
 Proof:
 - Koneksi Barat ke Timur:
+  <br>
   ![ping west to east](assets/west-to-east.png)
 - Koneksi Timur ke Barat:
+  <br>
   ![ping easr to west](assets/east-to-west.png)
 
 ## Soal 4
@@ -198,9 +204,10 @@ Verifikasi di salah satu client:
 dig @192.236.3.3 ns1.K50.com
 dig @192.236.3.4 ns2.K50.com
 ```
+<br>
 
-![Zona K50.com](assets/4.PNG)    
-
+![Zona K50.com](assets/4.PNG).    
+<br>
 ## Soal 5
 Namai semua tokoh (hostname) sesuai glosarium, eonwe, earendil, elwing, cirdan, elrond, maglor, sirion, tirion, valmar, lindon, vingilot, dan verifikasi bahwa setiap host mengenali dan menggunakan hostname tersebut secara system-wide. Buat setiap domain untuk masing masing node sesuai dengan namanya (contoh: eru.<xxxx>.com) dan assign IP masing-masing juga. Lakukan pengecualian untuk node yang bertanggung jawab atas ns1 dan ns2
 
@@ -233,13 +240,19 @@ vingilot    IN      A       192.236.3.6
 Jangan lupa save dan setelah itu reload server dengan ``rndc reload``
 Selanjutnya kita test beberapa domain:
 - **vingilot.k50.com**
+  <br>
   ![test vingilot.k50.com](assets/hostname-test1.png)
+  <br>
   Terlihat IP Address yang sesuai dengan config kita tadi
 - **elwing.k50.com**
+  <br>
   ![test elwing.k50.com](assets/hostname-test2.png)
+  <br>
   Terlihat IP Address yang sesuai dengan config kita tadi
 - **maglor.k50.com**
+  <br>
   ![test maglor.k50.com](assets/hostname-test3.png)
+  <br>
   Terlihat IP Address yang sesuai dengan config kita tadi
 
 ## Soal 6
@@ -247,9 +260,11 @@ Lonceng Valmar berdentang mengikuti irama Tirion. Pastikan zone transfer berjala
 
 Kita lakukan pengecekan apakah nilai serial yang baru di Tirion sama dengan Valmar, kita coba cek dengan:
 - Cek Tirion
-![Serial Tirion](assets/transfer-check.png)
+  <br>
+  ![Serial Tirion](assets/transfer-check.png)
 - Cek Valmar
-![Serial Valmar](assets/transfer-check1.png)
+  <br>
+  ![Serial Valmar](assets/transfer-check1.png)
 
 ## Soal 7
 Tambahkan pada zona <xxxx>.com A record untuk sirion.<xxxx>.com (IP Sirion), lindon.<xxxx>.com (IP Lindon), dan vingilot.<xxxx>.com (IP Vingilot). Tetapkan CNAME :
@@ -267,12 +282,19 @@ app         IN      CNAME   vingilot.K50.com.
 ```
 Jangan lupa save dan setelah itu reload server dengan ``rndc reload``. Setelah itu kita coba test dengan client **Cirdan** dan **Vingilot**:
 - **Cirdan**:
+  <br>
   ![dig-app cirdan](assets/dig-app1.png)
+  <br>
   ![dig-static cirdan](assets/dig-static1.png)
+  <br>
   ![dig-www cirdan](assets/dig-www1.png)
+  
 - **Vingilot**:
+  <br>
   ![dig-app vingilot](assets/dig-app2.png)
+  <br>
   ![dig-static vingilot](assets/dig-static2.png)
+  <br>
   ![dig-www vingilot](assets/dig-www2.png)
 <br>
 
@@ -350,10 +372,13 @@ echo "Setup reverse slave di Valmar selesai. Cek syslog buat liat transfer log."
 
 Setelah selesai setup reverse proxy, kita lanjutkan uji coba keberhasilan query reverse untuk alamat Sirion, Lindon, Vingilot:
 - **Sirion**:
+  <br>
   ![reverse query sirion](assets/rev-sirion.png)
 - **Lindon**:
+  <br>
   ![reverse query lindon](assets/rev-lindon.png)
 - **Vingilot**:
+  <br>
   ![reverse query vingilot](assets/rev-vingilot.png)
 
 # Soal 9:
